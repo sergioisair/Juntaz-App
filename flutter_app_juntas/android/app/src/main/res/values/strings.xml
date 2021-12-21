@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">JuntazApp</string>
+    <string name="facebook_app_id">539276270677804</string> 
+    <string name="fb_login_protocol_scheme">fb539276270677804</string>
+</resources>
+
+
