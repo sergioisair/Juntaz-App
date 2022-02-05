@@ -11,6 +11,7 @@ import 'package:firebase_authentication_tutorial/models/junta_group_model.dart';
 import 'package:firebase_authentication_tutorial/Screens/Juntas/create_group_junta.dart';
 import 'package:firebase_authentication_tutorial/Screens/Juntas/juntas_home.dart';
 import 'package:firebase_authentication_tutorial/global.dart';
+import 'package:firebase_authentication_tutorial/styles.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_authentication_tutorial/constants.dart';
 import 'package:firebase_authentication_tutorial/models/junta_users_list.dart';
@@ -160,7 +161,9 @@ class _PayJuntaState extends State<PayJunta> {
         .then((DataSnapshot snapshot) {
       Map<dynamic, dynamic> values = snapshot.value;
       values.forEach((key, valuess) {
-        print("IDJUNTA: " + valuess["idJunta"].toString() + " es igual a ${widget.junta_code} ?");
+        print("IDJUNTA: " +
+            valuess["idJunta"].toString() +
+            " es igual a ${widget.junta_code} ?");
         if (valuess["idJunta"].toString().contains(widget.junta_code)) {
           print("SI CONTIENE");
           FirebaseDatabase.instance
@@ -318,10 +321,22 @@ class _PayJuntaState extends State<PayJunta> {
                             children: [
                               Text(
                                 //double.parse().toString(),
-                                _JuntaUsersList[index].Apetpat == "" ? _JuntaUsersList[index].Name_user.split(" ")[0] + " " +_JuntaUsersList[index].Name_user.split(" ")[1] :_JuntaUsersList[index].Name_user.split(" ")[0] +
-                                    " " +
-                                    _JuntaUsersList[index].Apetpat.split(" ")[0] +
-                                    "  ",
+                                _JuntaUsersList[index].Apetpat == ""
+                                    ? _JuntaUsersList[index]
+                                            .Name_user
+                                            .split(" ")[0] +
+                                        " " +
+                                        _JuntaUsersList[index]
+                                            .Name_user
+                                            .split(" ")[1]
+                                    : _JuntaUsersList[index]
+                                            .Name_user
+                                            .split(" ")[0] +
+                                        " " +
+                                        _JuntaUsersList[index]
+                                            .Apetpat
+                                            .split(" ")[0] +
+                                        "  ",
                                 style: TextStyle(
                                     fontSize: 15.0,
                                     color:
@@ -443,14 +458,14 @@ class _PayJuntaState extends State<PayJunta> {
                                                     _JuntaUsersList[index].id)
                                                 .child(code_notif)
                                                 .set(notification);
-                                              await FirebaseDatabase.instance
+                                            await FirebaseDatabase.instance
                                                 .reference()
                                                 .child("NumNotif")
                                                 .child(
                                                     _JuntaUsersList[index].id)
                                                 .child(code_notif)
                                                 .set(notification);
-                                            
+
                                             /*print("INICIO DE LO CHIDO");
                                             String userPendiente;
                                             print("Buscando en JuntaIntegrants/${widget.junta_code}/${_JuntaUsersList[index].id}");
@@ -651,7 +666,7 @@ class _PayJuntaState extends State<PayJunta> {
                                           .child(_JuntaIntegrantsList[i].key)
                                           .child(code_notif)
                                           .set(notification);
-                                          await FirebaseDatabase.instance
+                                      await FirebaseDatabase.instance
                                           .reference()
                                           .child("NumNotif")
                                           .child(_JuntaIntegrantsList[i].key)
@@ -714,8 +729,7 @@ class _PayJuntaState extends State<PayJunta> {
                       children: [
                         TextSpan(
                           text: "   " + _JuntaIntegrantsList.length.toString(),
-                          style: Theme.of(context)
-                              .textTheme
+                          style: ThemeStyles()
                               .display1
                               .apply(color: Colors.white, fontWeightDelta: 2),
                         )
@@ -730,14 +744,18 @@ class _PayJuntaState extends State<PayJunta> {
                       if (widget.junta_info.Coin_type ==
                           "Tipo de Moneda: Dólares")
                         Text(
-                          "Aporte " + widget.junta_info.tipoJunta +  ": \$. " +
+                          "Aporte " +
+                              widget.junta_info.tipoJunta +
+                              ": \$. " +
                               widget.junta_info.Aporte.toStringAsFixed(0),
                           style: TextStyle(color: Colors.grey[300]),
                         ),
                       if (widget.junta_info.Coin_type ==
                           "Tipo de Moneda: Soles")
                         Text(
-                          "Aporte " + widget.junta_info.tipoJunta +  ": S/. " +
+                          "Aporte " +
+                              widget.junta_info.tipoJunta +
+                              ": S/. " +
                               widget.junta_info.Aporte.toStringAsFixed(0),
                           style: TextStyle(color: Colors.grey[300]),
                         )
@@ -757,8 +775,7 @@ class _PayJuntaState extends State<PayJunta> {
                 Expanded(
                   child: Text(
                     "Día límite de aporte: ",
-                    style: Theme.of(context)
-                        .textTheme
+                    style: ThemeStyles()
                         .title
                         .apply(color: darkBlue, fontWeightDelta: 2),
                   ),

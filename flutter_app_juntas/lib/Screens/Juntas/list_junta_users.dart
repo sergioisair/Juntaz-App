@@ -1,4 +1,5 @@
 //import 'package:firebase_authentication_tutorial/models/JuntaIntegrants.dart';
+import 'package:firebase_authentication_tutorial/Screens/Home/home.dart';
 import 'package:firebase_authentication_tutorial/models/junta_integrant_model.dart';
 import 'package:firebase_authentication_tutorial/models/Fields_Options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,6 +11,7 @@ import 'package:firebase_authentication_tutorial/Screens/Juntas/juntas_home.dart
 import 'package:firebase_authentication_tutorial/global.dart';
 import 'package:firebase_authentication_tutorial/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_authentication_tutorial/styles.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +24,7 @@ class ListJuntaUsers extends StatefulWidget {
   final User_ user_;
   final String junta_code;
   JuntaInfo junta_info;
+  bool pay;
   ListJuntaUsers({this.user_, this.junta_info, this.junta_code});
   @override
   State<StatefulWidget> createState() => new _ListJuntaUsersState();
@@ -48,6 +51,7 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
   //bool _isEmailVerified = false;
   bool todos = true;
   int pressed = 0;
+  bool pay = false;
 
   @override
   void initState() {
@@ -70,7 +74,7 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
     //////////////////////////////
     _JuntaIntegrantsList = new List();
     _JuntaUsersList = new List();
-    _JuntaIntegrantsQuery = 
+    _JuntaIntegrantsQuery =
         _database.child("Juntas_Integrants/" + widget.junta_code);
     _onJuntaIntegrantsAddedSubscription =
         _JuntaIntegrantsQuery.onChildAdded.listen(onEntryAdded);
@@ -118,7 +122,6 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                 values["apepat"],
                 values["email"],
                 values["phone"])),
-
           );
           print("users names: " + user_list.Name_user);
         });
@@ -139,6 +142,55 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
         _JuntaUsersList.removeAt(index);
       });
     });
+  }
+
+  Future deleteJunta() async {
+    //await Future.delayed(Duration(seconds: 3));
+    await FirebaseDatabase.instance
+        .reference()
+        .child("Juntas_Info")
+        .child(widget.junta_code)
+        .remove();
+    await FirebaseDatabase.instance
+        .reference()
+        .child("Juntas_Integrants")
+        .child(widget.junta_code)
+        .remove();
+    await FirebaseDatabase.instance
+        .reference()
+        .child("Juntas_Transactions")
+        .child(widget.junta_code)
+        .remove();
+    await FirebaseDatabase.instance
+        .reference()
+        .child("Juntas_Users")
+        .child(widget.user_.id)
+        .child(widget.junta_code)
+        .remove();
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Junta eliminada"),
+          content: Text(
+              "Debido a que sólo hay un miembro en la junta, esta se ha disuelto"),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => //Home(uid: result.user.uid)
+                          HomeScreen(user_: widget.user_),
+                    ),
+                  );
+                },
+                child: Text("Ok"))
+          ],
+        );
+      },
+    );
   }
 
   showAddJuntaIntegrantsDialog(BuildContext context) async {
@@ -176,6 +228,8 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
         });
   }
 
+  bool eliminar = false;
+
   Widget showJuntaIntegrantsList() {
     if (_JuntaIntegrantsList.length > 0) {
       return SingleChildScrollView(
@@ -192,7 +246,13 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                   String state_pay = _JuntaIntegrantsList[index].state_pay;
                   String rol_junta = _JuntaIntegrantsList[index].rol_junta;
                   int turno = _JuntaIntegrantsList[index].turno;
-                  print(integrant_email + " turno es " + turno.toString());
+                  //print(integrant_email + " turno es " + turno.toString());
+                  if (_JuntaIntegrantsList[index].key == widget.user_.id &&
+                      _JuntaIntegrantsList[index].state_pay == "1") pay = true;
+                  if (_JuntaIntegrantsList.length < 2 && eliminar == false) {
+                    eliminar = true;
+                    deleteJunta();
+                  }
                   //print( "Tamano _JuntaUsersList "+ _JuntaUsersList.length.toString());
                   var current_turno = widget.junta_info.Turno;
                   Color color;
@@ -201,9 +261,12 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                   //if (index == current_turno) {
                   if (turno == current_turno) {
                     color_back = Colors.transparent;
-                    icon = Icon(widget.junta_info.total_amount ==
+                    icon = Icon(
+                        widget.junta_info.total_amount ==
                                 widget.junta_info.aporte *
-                                    _JuntaIntegrantsList.length ? Icons.download_rounded : Icons.watch_later_rounded,
+                                    _JuntaIntegrantsList.length
+                            ? Icons.download_rounded
+                            : Icons.watch_later_rounded,
                         size: 30,
                         color: widget.junta_info.total_amount ==
                                 widget.junta_info.aporte *
@@ -223,7 +286,7 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                   } else {
                     color = Colors.grey;
                   }*/
-                  if (_JuntaIntegrantsList[index].state_pay == "1"){
+                  if (_JuntaIntegrantsList[index].state_pay == "1") {
                     color = Colors.blue;
                   } else {
                     color = Colors.grey;
@@ -238,15 +301,22 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                         contentPadding: EdgeInsets.symmetric(
                             horizontal: 20.0, vertical: 10.0),
 
-                        leading:  CircleAvatar(child: Text((turno+1).toString(), style: TextStyle(color: Colors.white),),backgroundColor: color)
-                        ,
+                        leading: CircleAvatar(
+                            child: Text(
+                              (turno + 1).toString(),
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            backgroundColor: color),
 
                         title: Text(
                           //double.parse().toString(),
-                          _JuntaUsersList[index].Apetpat == "" ? _JuntaUsersList[index].Name_user.split(" ")[0] + " " +_JuntaUsersList[index].Name_user.split(" ")[1] :
-                          _JuntaUsersList[index].Name_user.split(" ")[0] +
-                              " " +
-                              _JuntaUsersList[index].Apetpat.split(" ")[0],
+                          _JuntaUsersList[index].Apetpat == ""
+                              ? _JuntaUsersList[index].Name_user.split(" ")[0] +
+                                  " " +
+                                  _JuntaUsersList[index].Name_user.split(" ")[1]
+                              : _JuntaUsersList[index].Name_user.split(" ")[0] +
+                                  " " +
+                                  _JuntaUsersList[index].Apetpat.split(" ")[0],
                           style: TextStyle(fontSize: 15.0),
                         ),
 
@@ -268,10 +338,11 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                               }
                             }
                             // SI NO ERES EL ADMIN
-                            if(widget.user_.id != widget.junta_info.id_creator) {
+                            if (widget.user_.id !=
+                                widget.junta_info.id_creator) {
                               final ConfirmAction action0 =
-                                  await _asyncConfirmDialog(
-                                      context, "Sólo el administrador puede otorgar los pagos");
+                                  await _asyncConfirmDialog(context,
+                                      "Sólo el administrador puede otorgar los pagos");
                               print("Confirm Action $action0");
                             } else {
                               // SI NO HAY PAGADO
@@ -299,7 +370,12 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                               } else {
                                 final ConfirmAction action2 =
                                     await _asyncConfirmDialog(
-                                        context, (_JuntaIntegrantsList[index].integrant_email == widget.user_.email) ? "¿Deseas recibir tu pago?" : "¿Enviar pago a ${_JuntaIntegrantsList[index].integrant_email}?");
+                                        context,
+                                        (_JuntaIntegrantsList[index]
+                                                    .integrant_email ==
+                                                widget.user_.email)
+                                            ? "¿Deseas recibir tu pago?"
+                                            : "¿Enviar pago a ${_JuntaIntegrantsList[index].integrant_email}?");
                                 print("Confirm Action $action2");
                                 // RECIBIR EL PAGO
                                 if (action2 == ConfirmAction.ACCEPT) {
@@ -309,11 +385,15 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                                       DateFormat('dd/MM/yyyy  kk:mm')
                                           .format(now);
                                   Map<String, String> pay = {
-                                    'aporte': (widget.junta_info.aporte * _JuntaIntegrantsList.length).toString(),
+                                    'aporte': (widget.junta_info.aporte *
+                                            _JuntaIntegrantsList.length)
+                                        .toString(),
                                     'state_pay': "1",
                                     "aporte_day": formattedDate.toString(),
-                                    "name_integrant": _JuntaIntegrantsList[index].name,
-                                    'last_name': _JuntaIntegrantsList[index].integrant_email,
+                                    "name_integrant":
+                                        _JuntaIntegrantsList[index].name,
+                                    'last_name': _JuntaIntegrantsList[index]
+                                        .integrant_email,
                                   };
                                   await FirebaseDatabase.instance
                                       .reference()
@@ -343,35 +423,54 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                                   }
                                   widget.junta_info.turno = pass_turno;
                                   widget.junta_info.total_amount = 0;
-                                  setState(() {
-                                    
-                                  });
-                                  int diaAporte = int.parse(widget.junta_info.aporte_day);
-                                  int diaPago = DateTime.utc(DateTime.now().year, DateTime.now().month, diaAporte).add(Duration(days: 1)).day;
+                                  setState(() {});
+                                  int diaAporte =
+                                      int.parse(widget.junta_info.aporte_day);
+                                  int diaPago = DateTime.utc(
+                                          DateTime.now().year,
+                                          DateTime.now().month,
+                                          diaAporte)
+                                      .add(Duration(days: 1))
+                                      .day;
 
-                                  if(widget.junta_info.tipoJunta == "Quincenal"){
-                                    if(diaAporte <= 15){
+                                  if (widget.junta_info.tipoJunta ==
+                                      "Quincenal") {
+                                    if (diaAporte <= 15) {
                                       diaAporte = diaAporte + 15;
-                                      if(diaAporte == 30)
-                                        diaPago = DateTime.utc(DateTime.now().year, DateTime.now().month, 30).add(Duration(days: 1)).day;
-                                      else diaPago = diaAporte+1;
-                                    }
-                                    else{
+                                      if (diaAporte == 30)
+                                        diaPago = DateTime.utc(
+                                                DateTime.now().year,
+                                                DateTime.now().month,
+                                                30)
+                                            .add(Duration(days: 1))
+                                            .day;
+                                      else
+                                        diaPago = diaAporte + 1;
+                                    } else {
                                       diaAporte = diaAporte - 15;
-                                      diaPago = diaAporte+1;
-                                    }     
+                                      diaPago = diaAporte + 1;
+                                    }
                                   }
 
-                                  if(widget.junta_info.tipoJunta == "Semanal"){
+                                  if (widget.junta_info.tipoJunta ==
+                                      "Semanal") {
                                     final diaAct = diaAporte;
-                                    diaAporte = DateTime.utc(DateTime.now().year, DateTime.now().month, diaAporte).add(Duration(days: 7)).day;
-                                    if(diaAct > diaAporte)
-                                      diaPago = diaAporte+1;
+                                    diaAporte = DateTime.utc(
+                                            DateTime.now().year,
+                                            DateTime.now().month,
+                                            diaAporte)
+                                        .add(Duration(days: 7))
+                                        .day;
+                                    if (diaAct > diaAporte)
+                                      diaPago = diaAporte + 1;
                                     else
-                                    diaPago = DateTime.utc(DateTime.now().year, DateTime.now().month, diaAporte).add(Duration(days: 1)).day;
+                                      diaPago = DateTime.utc(
+                                              DateTime.now().year,
+                                              DateTime.now().month,
+                                              diaAporte)
+                                          .add(Duration(days: 1))
+                                          .day;
                                   }
-
-
 
                                   await FirebaseDatabase.instance
                                       .reference()
@@ -419,8 +518,10 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                                       _showInSnackBar(
                                           'Pago Cobrado con éxito!');
                                       widget.junta_info.total_amount = 0;
-                                      widget.junta_info.pago_day = diaPago.toString();
-                                      widget.junta_info.aporte_day = diaAporte.toString();
+                                      widget.junta_info.pago_day =
+                                          diaPago.toString();
+                                      widget.junta_info.aporte_day =
+                                          diaAporte.toString();
                                       setState(() {});
                                     }
                                   }
@@ -446,11 +547,10 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
     }
   }
 
-  int contarPagos(){
+  int contarPagos() {
     int contadorPagos = 0;
-    for(int i=0; i<_JuntaIntegrantsList.length ; i++)
-      if(_JuntaIntegrantsList[i].state_pay == "1")
-        contadorPagos++;
+    for (int i = 0; i < _JuntaIntegrantsList.length; i++)
+      if (_JuntaIntegrantsList[i].state_pay == "1") contadorPagos++;
     actualizaTurno();
     return contadorPagos;
   }
@@ -458,15 +558,13 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
   dynamic turno;
 
   void actualizaTurno() async {
-    
     await FirebaseDatabase.instance
         .reference()
         .child("Juntas_Info")
         .child(widget.junta_code)
         .once()
         .then((snapshot) {
-      turno = int.parse(
-          snapshot.value["turno"]);
+      turno = int.parse(snapshot.value["turno"]);
     });
     setState(() {
       widget.junta_info.turno = turno;
@@ -526,14 +624,17 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                             "Tipo de Moneda: Soles")
                           TextSpan(text: "S/. "),
                         TextSpan(
-                          text:
-                              (contarPagos() * widget.junta_info.aporte).toStringAsFixed(0), //widget.junta_info.Total_amount.toStringAsFixed(0),
-                          style: Theme.of(context)
-                              .textTheme
+                          text: (contarPagos() * widget.junta_info.aporte)
+                              .toStringAsFixed(
+                                  0), //widget.junta_info.Total_amount.toStringAsFixed(0),
+                          style: ThemeStyles()
                               .display1
                               .apply(color: Colors.white, fontWeightDelta: 2),
                         ),
-                        TextSpan(text: " / ${(widget.junta_info.Aporte * _JuntaIntegrantsList.length).toStringAsFixed(0)}", style: TextStyle(fontSize: 16)),
+                        TextSpan(
+                            text:
+                                " / ${(widget.junta_info.Aporte * _JuntaIntegrantsList.length).toStringAsFixed(0)}",
+                            style: TextStyle(fontSize: 16)),
                       ],
                     ),
                   ),
@@ -545,14 +646,18 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                       if (widget.junta_info.Coin_type ==
                           "Tipo de Moneda: Dólares")
                         Text(
-                          "Aporte " + widget.junta_info.tipoJunta +  ": \$. " +
+                          "Aporte " +
+                              widget.junta_info.tipoJunta +
+                              ": \$. " +
                               widget.junta_info.Aporte.toStringAsFixed(0),
                           style: TextStyle(color: Colors.grey[300]),
                         ),
                       if (widget.junta_info.Coin_type ==
                           "Tipo de Moneda: Soles")
                         Text(
-                          "Aporte " + widget.junta_info.tipoJunta +  ": S/. " +
+                          "Aporte " +
+                              widget.junta_info.tipoJunta +
+                              ": S/. " +
                               widget.junta_info.Aporte.toStringAsFixed(0),
                           style: TextStyle(color: Colors.grey[300]),
                         )
@@ -572,8 +677,7 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                 Expanded(
                   child: Text(
                     "Día de pago: ",
-                    style: Theme.of(context)
-                        .textTheme
+                    style: ThemeStyles()
                         .title
                         .apply(color: darkBlue, fontWeightDelta: 2),
                   ),
@@ -598,65 +702,76 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18.0),
                     side: BorderSide(
-                      color: DateTime.now().day.toString() ==
-                              widget.junta_info.aporte_day
-                          ? Colors.redAccent
-                          : diasRestantes() > 7
-                              ? Color.fromRGBO(0, 160, 227, 1)
-                              : Colors.yellow[700],
+                      color: pay
+                          ? Colors.black
+                          : DateTime.now().day.toString() ==
+                                  widget.junta_info.aporte_day
+                              ? Colors.redAccent
+                              : diasRestantes() > 7
+                                  ? Color.fromRGBO(0, 160, 227, 1)
+                                  : Colors.yellow[700],
                     )),
-                onPressed: pressed == 0 ? () {
-                  print("PRESSED ES $pressed");
-                  if(pressed == 1)
-                    return;
-                  
-                  if(pressed == 0){
-                    print("PRESSED CAMBIADO A 1");
-                    setState(() {
-                      
-                    pressed = 1;
-                    });
-                  if(widget.junta_info.pendientes > 0)
-                  return;
-                  bool actualice = true;
-                  //print("tamano de lista: "+_JuntaIntegrantsList.length.toString());
-                  for (int i = 0; i < _JuntaIntegrantsList.length; i++) {
-                    print("state pay: " + i.toString());
-                    if (_JuntaIntegrantsList[i].key == widget.user_.Id &&
-                        _JuntaIntegrantsList[i].state_pay == "1") {
-                      actualice = false;
-                      break;
-                    }
-                  }
-                  if (actualice == true) {
-                    _validateInputs();
-                  } else {
-                    _showInSnackBar('Usted ya realizó su pago!');
-                  }
-                  setState(() async {
-                    await Future.delayed(Duration(seconds: 1));
-                    pressed = 0;
-                    });
-                  }
-                } : (){},
+                onPressed: pressed == 0
+                    ? () {
+                        print("PRESSED ES $pressed");
+                        if (pressed == 1) return;
+
+                        if (pressed == 0) {
+                          print("PRESSED CAMBIADO A 1");
+                          setState(() {
+                            pressed = 1;
+                          });
+                          if (widget.junta_info.pendientes > 0) return;
+                          bool actualice = true;
+                          //print("tamano de lista: "+_JuntaIntegrantsList.length.toString());
+                          for (int i = 0;
+                              i < _JuntaIntegrantsList.length;
+                              i++) {
+                            print("state pay: " + i.toString());
+                            if (_JuntaIntegrantsList[i].key ==
+                                    widget.user_.Id &&
+                                _JuntaIntegrantsList[i].state_pay == "1") {
+                              actualice = false;
+                              pay = true;
+                              break;
+                            }
+                          }
+                          if (actualice == true) {
+                            _validateInputs();
+                          } else {
+                            _showInSnackBar('Usted ya realizó su pago!');
+                          }
+                          setState(() async {
+                            await Future.delayed(Duration(seconds: 1));
+                            pressed = 0;
+                          });
+                        }
+                      }
+                    : () {},
                 padding: EdgeInsets.all(10.0),
-                color: Colors.white,
+                color: pay ? Colors.grey[300] : Colors.white,
                 textColor: Color.fromRGBO(0, 160, 227, 1),
                 child: Text(
-                  widget.junta_info.pendientes > 0 ? "Aún hay integrantes por confirmar" :
-                  DateTime.now().day.toString() == widget.junta_info.aporte_day
-                      ? "Registrar aporte\nHOY es el último día de aporte"
-                      : "Registrar aporte\n Restan " +
-                          diasRestantes().toString() +
-                          " días para realizar su aporte",
+                  widget.junta_info.pendientes > 0
+                      ? "Aún hay integrantes por confirmar"
+                      : pay == true
+                          ? "Ya has pagado"
+                          : DateTime.now().day.toString() ==
+                                  widget.junta_info.aporte_day
+                              ? "Registrar aporte\nHOY es el último día de aporte"
+                              : "Registrar aporte\n Restan " +
+                                  diasRestantes().toString() +
+                                  " días para realizar su aporte",
                   style: TextStyle(
                     fontSize: 15,
-                    color: DateTime.now().day.toString() ==
-                            widget.junta_info.aporte_day
-                        ? Colors.redAccent
-                        : diasRestantes() > 7
-                            ? Color.fromRGBO(0, 160, 227, 1)
-                            : Colors.yellow[700],
+                    color: pay
+                        ? Colors.black
+                        : DateTime.now().day.toString() ==
+                                widget.junta_info.aporte_day
+                            ? Colors.redAccent
+                            : diasRestantes() > 7
+                                ? Color.fromRGBO(0, 160, 227, 1)
+                                : Colors.yellow[700],
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -724,7 +839,7 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
 
   void updateDataRealTime() async {
     //final db = FirebaseDatabase.instance.reference().child("Users_Doctors").orderByKey().equalTo(widget.uid);
-    
+
     print("Entra aqui");
     double montoActual;
     await FirebaseDatabase.instance
@@ -733,16 +848,12 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
         .child(widget.junta_code)
         .once()
         .then((snapshot) {
-      montoActual = double.parse(
-          snapshot.value["total_amount"]);
+      montoActual = double.parse(snapshot.value["total_amount"]);
     });
-    print("el monto actual es: "+montoActual.toString());
-    setState(() {
-      
-    });
+    print("el monto actual es: " + montoActual.toString());
+    setState(() {});
 
-    widget.junta_info.total_amount =
-        montoActual + widget.junta_info.Aporte;
+    widget.junta_info.total_amount = montoActual + widget.junta_info.Aporte;
 
     print("con mi pago ahora es: " + widget.junta_info.total_amount.toString());
     await FirebaseDatabase.instance
@@ -774,13 +885,13 @@ class _ListJuntaUsersState extends State<ListJuntaUsers> {
 }
 
 Future _asyncConfirmDialog(BuildContext context, String date) async {
-  if (date == "Desea recibir pago?") {
+  if (date == "¿Deseas recibir tu pago?") {
     return showDialog(
       context: context,
       barrierDismissible: false, // user must tap button for close dialog!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Informe'),
+          title: Text('Confirma tu respuesta'),
           content: Text(date.toString()),
           actions: [
             FlatButton(
@@ -805,9 +916,15 @@ Future _asyncConfirmDialog(BuildContext context, String date) async {
       barrierDismissible: false, // user must tap button for close dialog!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Informe'),
+          title: Text("Confirma tu respuesta"),
           content: Text(date.toString()),
           actions: [
+            FlatButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop(ConfirmAction.CANCEL);
+              },
+            ),
             FlatButton(
               child: const Text('Ok'),
               onPressed: () {

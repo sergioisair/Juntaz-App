@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_authentication_tutorial/Screens/Juntas/notifications.dart';
 import 'package:firebase_authentication_tutorial/global.dart';
+import 'package:firebase_authentication_tutorial/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -40,13 +41,26 @@ class _HomeScreenState extends State<HomeScreen> {
   String uid;
   void initState() {
     super.initState();
+    validar();
     getCurrentUser();
     auth2 = _auth;
   }
+
   StreamSubscription<Event> _onTodoAddedSubscription;
   StreamSubscription<Event> _onTodoChangedSubscription;
   StreamSubscription<Event> _onTodoRemoveSubscription;
   Query _todoQuery;
+
+  void validar() async {
+    if (widget.user_.validado == false)
+      await FirebaseDatabase.instance
+          .reference()
+          .child("Users")
+          .child(widget.user_.id)
+          .update({
+        "validado": true,
+      });
+  }
 
   int cant = 0;
 
@@ -54,18 +68,19 @@ class _HomeScreenState extends State<HomeScreen> {
     this.user = await _auth.currentUser();
     this.uid = user.uid;
     cant = 0;
-    _todoQuery = FirebaseDatabase.instance.reference().child("NumNotif/" + widget.user_.Id);
+    _todoQuery = FirebaseDatabase.instance
+        .reference()
+        .child("NumNotif/" + widget.user_.Id);
     _onTodoAddedSubscription = _todoQuery.onChildAdded.listen(onEntryAdded);
     _onTodoChangedSubscription =
         _todoQuery.onChildChanged.listen(onEntryChanged);
     _onTodoChangedSubscription =
-    _todoQuery.onChildRemoved.listen(onEntryRemoved);
+        _todoQuery.onChildRemoved.listen(onEntryRemoved);
   }
 
   onEntryChanged(Event event) async {
-    
-      String snap;
-      await FirebaseDatabase.instance
+    String snap;
+    await FirebaseDatabase.instance
         .reference()
         .child("NumNotif")
         .child(widget.user_.id)
@@ -75,17 +90,14 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     List<String> snaps = snap.split("idNotif");
     cant = snaps.length - 1;
-    
+
     print("ENTRYCHANGED CANT ES POR FIN $cant");
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   onEntryRemoved(Event event) async {
-    
-      String snap;
-      await FirebaseDatabase.instance
+    String snap;
+    await FirebaseDatabase.instance
         .reference()
         .child("NumNotif")
         .child(widget.user_.id)
@@ -95,16 +107,13 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     List<String> snaps = snap.split("idNotif");
     cant = snaps.length - 1;
-    
+
     print("ENTRYCHANGED CANT ES POR FIN $cant");
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   onEntryAdded(Event event) async {
-     
-      String snap;
+    String snap;
     await FirebaseDatabase.instance
         .reference()
         .child("NumNotif")
@@ -115,16 +124,13 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     List<String> snaps = snap.split("idNotif");
     cant = snaps.length - 1;
-    
+
     print("ENTRYADDED CANT ES POR FIN $cant");
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
-    onDeletedAdded(Event event) async {
-     
-      String snap;
+  onDeletedAdded(Event event) async {
+    String snap;
     await FirebaseDatabase.instance
         .reference()
         .child("NumNotif")
@@ -135,14 +141,10 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     List<String> snaps = snap.split("idNotif");
     cant = snaps.length - 1;
-    
+
     print("ENTRYADDED CANT ES POR FIN $cant");
-    setState(() {
-      
-    });
+    setState(() {});
   }
-
-
 
   Future<int> obtenerNumNotif() async {
     int cant = 0;
@@ -218,27 +220,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                 content: ListNotifications(
                                   user_: widget.user_,
                                 )));
-                          Future<int> n = Future.value(0);  
-                          setState(() {numNotif = n;});
+                        Future<int> n = Future.value(0);
+                        setState(() {
+                          numNotif = n;
+                        });
                       },
                     ),
                   ),
-                  
-                        Container(
-                          alignment: Alignment.topRight,
-                          padding: EdgeInsets.only(top: 10, right: 4),
-                          child: cant > 0 ? CircleAvatar(
-                            child: Text(
-                              cant.toString(),
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 8),
-                            ),
-                            backgroundColor: Colors.red,
-                            radius: 7,
-                          ) : Container()
-                        ),
-                      
-                  
+                  Container(
+                      alignment: Alignment.topRight,
+                      padding: EdgeInsets.only(top: 10, right: 4),
+                      child: cant > 0
+                          ? CircleAvatar(
+                              child: Text(
+                                cant.toString(),
+                                style:
+                                    TextStyle(color: Colors.white, fontSize: 8),
+                              ),
+                              backgroundColor: Colors.red,
+                              radius: 7,
+                            )
+                          : Container()),
                 ],
               ),
             ),
@@ -268,25 +270,27 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "¡Hola!  ",
-                      style: Theme.of(context)
-                          .textTheme
-                          .display1
-                          .apply(color: Colors.grey[500]),
-                    ),
-                    Text(
-                      widget.user_.Name ?? "",
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context)
-                          .textTheme
-                          .display1
-                          .apply(color: darkBlue, fontWeightDelta: 2),
-                    ),
-                  ],
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "¡Hola!  ",
+                        style: ThemeStyles()
+                            .display1
+                            .apply(color: Colors.grey[500]),
+                      ),
+                      Text(
+                        widget.user_.Name ?? "",
+                        textAlign: TextAlign.center,
+                        maxLines: 3,
+                        style: ThemeStyles()
+                            .display1
+                            .apply(color: darkBlue, fontWeightDelta: 2),
+                      ),
+                    ],
+                  ),
                 ),
                 Image.asset(
                   "assets/icons/juntas.png",
@@ -484,6 +488,7 @@ class _NavigateDrawerState extends State<NavigateDrawer> {
                                 user_: widget.user_,
                               )),
                     );
+                    print("se ha hecho pop y push");
                   }
                   /*onPressed: () =>
               Navigator.push(

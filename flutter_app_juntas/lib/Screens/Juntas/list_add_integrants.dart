@@ -109,8 +109,15 @@ class _ListJuntaUsersState extends State<ListAddIntegrants> {
                       //child: Text("Buscar Personas"),
                       );
                 } else {
-                  return AddIntegrants[index].name.contains(filter) ||
-                          AddIntegrants[index].form.contains(filter)
+                  return (AddIntegrants[index]
+                                  .name
+                                  .toUpperCase()
+                                  .startsWith(filter.toUpperCase()) ||
+                              AddIntegrants[index]
+                                  .form
+                                  .toUpperCase()
+                                  .startsWith(filter.toUpperCase())) &&
+                          AddIntegrants[index].validado == true
                       ? ListTile(
                           onTap: () async {
                             final ConfirmAction action =
@@ -297,6 +304,7 @@ class Item {
   String form;
   String name;
   bool notif;
+  bool validado;
   String phone;
 
   Item(this.form, this.name, this.notif, this.phone);
@@ -306,9 +314,16 @@ class Item {
         form = snapshot.value["email"],
         name = snapshot.value["name"],
         notif = snapshot.value["notificar"] as bool,
-        phone = snapshot.value["phone"];
+        phone = snapshot.value["phone"],
+        validado = snapshot.value["validado"] as bool;
 
   toJson() {
-    return {"email": form, "name": name, "notificar": notif, "phone": phone};
+    return {
+      "email": form,
+      "name": name,
+      "notificar": notif,
+      "phone": phone,
+      "validado": validado
+    };
   }
 }

@@ -31,9 +31,12 @@ class Body extends StatefulWidget {
 class _Body extends State<Body> {
   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   ProgressDialog _progressDialog;
+  GlobalKey<FormState> _key = new GlobalKey();
+  bool tyc = false;
+  bool pp = false;
 
   @override
-  void initState() { 
+  void initState() {
     super.initState();
     _progressDialog =
         MyProgressDialog.createProgressDialog(context, "Espere un momento...");
@@ -55,6 +58,7 @@ class _Body extends State<Body> {
                   "BIENVENIDO A JUNTAZ",
                   style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
                 ),
+                Text("APP DE PRUEBAS"),
                 //SizedBox(height: size.height * 0.05),
                 Image.asset(
                   //SvgPicture.asset
@@ -68,9 +72,7 @@ class _Body extends State<Body> {
                       context,
                       MaterialPageRoute(
                         builder: (context) {
-                          return LoginScreen(
-                            
-                          );
+                          return LoginScreen();
                         },
                       ),
                     );
@@ -85,9 +87,7 @@ class _Body extends State<Body> {
                       context,
                       MaterialPageRoute(
                         builder: (context) {
-                          return SignUpScreen(
-                            
-                          );
+                          return SignUpScreen();
                         },
                       ),
                     );
@@ -146,7 +146,8 @@ class _Body extends State<Body> {
                   children: <Widget>[
                     SocalIcon(
                       iconSrc: "assets/icons/facebook.svg",
-                      press: () => abrirRedSocial("https://fb.me/"), // ingresar URL de facebook
+                      press: () => abrirRedSocial(
+                          "https://fb.me/"), // ingresar URL de facebook
                     ),
                     /*SocalIcon(
                       iconSrc: "assets/icons/twitter.svg",
@@ -183,8 +184,8 @@ class _Body extends State<Body> {
     final FirebaseAuth _auth = FirebaseAuth.instance;
     String uid;
     Query db = null;
-    User_ user_ = new User_(
-        "NONE", "...", "...", "...", "Elegir", "...", "...", 0.00, null, "...", false);
+    User_ user_ = new User_("NONE", "...", "...", "...", "Elegir", "...", "...",
+        0.00, null, "...", false, false);
 
     final result =
         await fbLogin.logIn(['email', 'public_profile']).then((result) {
@@ -201,115 +202,186 @@ class _Body extends State<Body> {
                 context: context,
                 builder: (context) => SingleChildScrollView(
                   child: WillPopScope(
-                    onWillPop: (){},
+                    onWillPop: () {},
                     child: AlertDialog(
                       title: Text("Completa tu perfil"),
-                      content: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text("Teléfono: "),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          TextFieldContainer(
-                            child: TextFormField(
-                                decoration: const InputDecoration(
-                                  hintText: 'Ingresa aquí',
-                                  icon: Icon(Icons.phone, color: Colors.grey),
+                      content: Form(
+                        key: _key,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text("Teléfono: "),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            TextFieldContainer(
+                              child: TextFormField(
+                                  decoration: const InputDecoration(
+                                    hintText: 'Ingresa aquí',
+                                    icon: Icon(Icons.phone, color: Colors.grey),
+                                  ),
+                                  controller: telefonoController,
+                                  keyboardType: TextInputType.phone,
+                                  maxLength: 10,
+                                  validator: validateMobile,
+                                  onSaved: (String val) {
+                                    telefonoController.text = val;
+                                  }),
+                            ),
+                            Text("Fecha de Nacimiento: "),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            ButtonTheme(
+                              minWidth: MediaQuery.of(context).size.width,
+                              height: 60.0,
+                              splashColor: Colors.lightBlue[100],
+                              buttonColor: Colors.white,
+                              child: RaisedButton.icon(
+                                label: Text(
+                                  selectedbd,
+                                  style: TextStyle(color: Colors.black54),
                                 ),
-                                controller: telefonoController,
-                                keyboardType: TextInputType.phone,
-                                maxLength: 10,
-                                validator: validateMobile,
-                                onSaved: (String val) {
-                                  telefonoController.text = val;
-                                }),
-                          ),
-                          Text("Fecha de Nacimiento: "),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          ButtonTheme(
-                            minWidth: MediaQuery.of(context).size.width,
-                            height: 60.0,
-                            splashColor: Colors.lightBlue[100],
-                            buttonColor: Colors.white,
-                            child: RaisedButton.icon(
-                              label: Text(
-                                selectedbd,
-                                style: TextStyle(color: Colors.black54),
-                              ),
-                              icon: Icon(
-                                Icons.calendar_today,
-                                color: Colors.blue,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(60),
-                              ),
-                              onPressed: () {
-                                showDatePicker(
-                                  context: context,
-                                  locale: Locale('es', 'MX'),
-                                  initialDate: _dateTime == null
-                                      ? DateTime.utc(DateTime.now().year - 17)
-                                      : _dateTime,
-                                  firstDate: DateTime(1920),
-                                  lastDate:
-                                      DateTime.utc(DateTime.now().year - 17),
-                                ).then((date) {
-                                  setState(() {
-                                    _dateTime = date;
-                                    selectedbd = _dateTime.day.toString() +
-                                        "/" +
-                                        _dateTime.month.toString() +
-                                        "/" +
-                                        _dateTime.year.toString();
+                                icon: Icon(
+                                  Icons.calendar_today,
+                                  color: Colors.blue,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(60),
+                                ),
+                                onPressed: () {
+                                  showDatePicker(
+                                    context: context,
+                                    locale: Locale('es', 'MX'),
+                                    initialDate: _dateTime == null
+                                        ? DateTime.utc(DateTime.now().year - 17)
+                                        : _dateTime,
+                                    firstDate: DateTime(1920),
+                                    lastDate:
+                                        DateTime.utc(DateTime.now().year - 17),
+                                  ).then((date) {
+                                    setState(() {
+                                      _dateTime = date;
+                                      selectedbd = _dateTime.day.toString() +
+                                          "/" +
+                                          _dateTime.month.toString() +
+                                          "/" +
+                                          _dateTime.year.toString();
+                                    });
                                   });
-                                });
-                              },
+                                },
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 15),
-                          Text("Tipo de Documento:    "),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Center(
-                            child: DropdownButton(
-                              hint: Text(
-                                  'Tipo de Documento'), // Not necessary for Option 1
-                              value: tipdocController.text,
-                              onChanged: (newValue) {
-                                setState(() {
-                                  tipdocController.text = newValue;
-                                });
-                              },
-                              items: list_type.map((location) {
-                                return DropdownMenuItem(
-                                  child: new Text(location),
-                                  value: location,
-                                );
-                              }).toList(),
+                            SizedBox(height: 15),
+                            Text("Tipo de Documento:    "),
+                            SizedBox(
+                              height: 10,
                             ),
-                          ),
-                          Text("Número de documento:    "),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          RoundedInputTelefField(
-                            icon: Icons.document_scanner,
-                            hintText: "Ej. 12345678",
-                            onChanged: (value_name) {
-                              numdocController.text = value_name;
-                            },
-                            typedoc: tipdocController.text,
-                          ),
-                        ],
+                            Center(
+                              child: DropdownButton(
+                                hint: Text(
+                                    'Tipo de Documento'), // Not necessary for Option 1
+                                value: tipdocController.text,
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    tipdocController.text = newValue;
+                                  });
+                                },
+                                items: list_type.map((location) {
+                                  return DropdownMenuItem(
+                                    child: new Text(location),
+                                    value: location,
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                            Text("Número de documento:    "),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            RoundedInputTelefField(
+                              icon: Icons.document_scanner,
+                              hintText: "Ej. 12345678",
+                              onChanged: (value_name) {
+                                numdocController.text = value_name;
+                              },
+                              typedoc: tipdocController.text,
+                            ),
+                            Text("HOLA"),
+                            Container(
+                              width: double.infinity,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                      child: GestureDetector(
+                                    onTap: () async {
+                                      await canLaunch(
+                                              "https://juntaz.com/tyc.html")
+                                          ? launch(
+                                              "https://juntaz.com/tyc.html")
+                                          : false as Future<bool>;
+                                    },
+                                    child: RichText(
+                                      text: TextSpan(children: [
+                                        TextSpan(
+                                            text: "Lee nuestros ",
+                                            style:
+                                                TextStyle(color: Colors.black)),
+                                        TextSpan(
+                                            text: "términos y condiciones",
+                                            style: TextStyle(
+                                                decoration:
+                                                    TextDecoration.underline,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold))
+                                      ]),
+                                    ),
+                                  ))
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: double.infinity,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                      child: GestureDetector(
+                                    onTap: () async {
+                                      await canLaunch(
+                                              "https://juntaz.com/pdp.html")
+                                          ? launch(
+                                              "https://juntaz.com/pdp.html")
+                                          : false as Future<bool>;
+                                    },
+                                    child: RichText(
+                                      text: TextSpan(children: [
+                                        TextSpan(
+                                            text: "Lee nuestra ",
+                                            style:
+                                                TextStyle(color: Colors.black)),
+                                        TextSpan(
+                                            text: "Política de Privacidad",
+                                            style: TextStyle(
+                                                decoration:
+                                                    TextDecoration.underline,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold))
+                                      ]),
+                                    ),
+                                  ))
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       actions: [
                         TextButton(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              if (_key.currentState.validate())
+                                Navigator.pop(context);
+                            },
                             child: Text("Continuar"))
                       ],
                     ),
@@ -328,6 +400,7 @@ class _Body extends State<Body> {
                 "fecha_nac": selectedbd,
                 "telefono": telefonoController.text,
                 "notificar": false,
+                "validado": false
               }).then((res) async {
                 user = await _auth.currentUser();
                 uid = user.uid;
@@ -351,7 +424,8 @@ class _Body extends State<Body> {
                         double.parse(values["total_amount"]),
                         values["fecha_nac"],
                         values["telefono"],
-                        values["notificar"] as bool));
+                        values["notificar"] as bool,
+                        values["validado"] as bool));
                   });
                 });
 
@@ -361,7 +435,7 @@ class _Body extends State<Body> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => //Home(uid: result.user.uid)
-                        HomeScreen( user_: user_),
+                        HomeScreen(user_: user_),
                   ),
                 );
               });
@@ -388,7 +462,8 @@ class _Body extends State<Body> {
                       double.parse(values["total_amount"]),
                       values["fecha_nac"],
                       values["telefono"],
-                      values["notificar"] as bool));
+                      values["notificar"] as bool,
+                      values["validado"] as bool));
                 });
               });
 
@@ -426,9 +501,9 @@ class _Body extends State<Body> {
     _progressDialog.show();
     try {
       final account = await _googleSignIn.signIn();
-      
+
       final googleAuth = await account.authentication;
-      
+
       List<String> list_type = ['DNI', 'Pasaporte', 'Carnet Extranjería'];
 
       TextEditingController tipdocController = TextEditingController();
@@ -443,7 +518,7 @@ class _Body extends State<Body> {
       String uid;
       Query db = null;
       User_ user_ = new User_("NONE", "...", "...", "...", "Elegir", "...",
-          "...", 0.00, null, "...", false);
+          "...", 0.00, null, "...", false, false);
 
       final AuthCredential oAuthCredential = GoogleAuthProvider.getCredential(
           idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
@@ -457,114 +532,179 @@ class _Body extends State<Body> {
             context: context,
             builder: (context) => SingleChildScrollView(
               child: WillPopScope(
-                onWillPop: (){},
+                onWillPop: () {},
                 child: AlertDialog(
                   title: Text("Completa tu perfil"),
-                  content: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text("Teléfono: "),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      TextFieldContainer(
-                        child: TextFormField(
-                            decoration: const InputDecoration(
-                              hintText: 'Ingresa aquí',
-                              icon: Icon(Icons.phone, color: Colors.grey),
+                  content: Form(
+                    key: _key,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text("Teléfono: "),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        TextFieldContainer(
+                          child: TextFormField(
+                              decoration: const InputDecoration(
+                                hintText: 'Ingresa aquí',
+                                icon: Icon(Icons.phone, color: Colors.grey),
+                              ),
+                              controller: telefonoController,
+                              keyboardType: TextInputType.phone,
+                              maxLength: 10,
+                              validator: validateMobile,
+                              onSaved: (String val) {
+                                telefonoController.text = val;
+                              }),
+                        ),
+                        Text("Fecha de Nacimiento: "),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        ButtonTheme(
+                          minWidth: MediaQuery.of(context).size.width,
+                          height: 60.0,
+                          splashColor: Colors.lightBlue[100],
+                          buttonColor: Colors.white,
+                          child: RaisedButton.icon(
+                            label: Text(
+                              selectedbd,
+                              style: TextStyle(color: Colors.black54),
                             ),
-                            controller: telefonoController,
-                            keyboardType: TextInputType.phone,
-                            maxLength: 10,
-                            validator: validateMobile,
-                            onSaved: (String val) {
-                              telefonoController.text = val;
-                            }),
-                      ),
-                      Text("Fecha de Nacimiento: "),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      ButtonTheme(
-                        minWidth: MediaQuery.of(context).size.width,
-                        height: 60.0,
-                        splashColor: Colors.lightBlue[100],
-                        buttonColor: Colors.white,
-                        child: RaisedButton.icon(
-                          label: Text(
-                            selectedbd,
-                            style: TextStyle(color: Colors.black54),
-                          ),
-                          icon: Icon(
-                            Icons.calendar_today,
-                            color: Colors.blue,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(60),
-                          ),
-                          onPressed: () {
-                            showDatePicker(
-                              context: context,
-                              locale: Locale('es', 'MX'),
-                              initialDate: _dateTime == null
-                                  ? DateTime.utc(DateTime.now().year - 17)
-                                  : _dateTime,
-                              firstDate: DateTime(1920),
-                              lastDate: DateTime.utc(DateTime.now().year - 17),
-                            ).then((date) {
-                              setState(() {
-                                _dateTime = date;
-                                selectedbd = _dateTime.day.toString() +
-                                    "/" +
-                                    _dateTime.month.toString() +
-                                    "/" +
-                                    _dateTime.year.toString();
+                            icon: Icon(
+                              Icons.calendar_today,
+                              color: Colors.blue,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(60),
+                            ),
+                            onPressed: () {
+                              showDatePicker(
+                                context: context,
+                                locale: Locale('es', 'MX'),
+                                initialDate: _dateTime == null
+                                    ? DateTime.utc(DateTime.now().year - 17)
+                                    : _dateTime,
+                                firstDate: DateTime(1920),
+                                lastDate:
+                                    DateTime.utc(DateTime.now().year - 17),
+                              ).then((date) {
+                                setState(() {
+                                  _dateTime = date;
+                                  selectedbd = _dateTime.day.toString() +
+                                      "/" +
+                                      _dateTime.month.toString() +
+                                      "/" +
+                                      _dateTime.year.toString();
+                                });
                               });
-                            });
-                          },
+                            },
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 15),
-                      Text("Tipo de Documento:    "),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Center(
-                        child: DropdownButton(
-                          hint: Text(
-                              'Tipo de Documento'), // Not necessary for Option 1
-                          value: tipdocController.text,
-                          onChanged: (newValue) {
-                            setState(() {
-                              tipdocController.text = newValue;
-                            });
-                          },
-                          items: list_type.map((location) {
-                            return DropdownMenuItem(
-                              child: new Text(location),
-                              value: location,
-                            );
-                          }).toList(),
+                        SizedBox(height: 15),
+                        Text("Tipo de Documento:    "),
+                        SizedBox(
+                          height: 10,
                         ),
-                      ),
-                      Text("Número de documento:    "),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      RoundedInputTelefField(
-                        icon: Icons.document_scanner,
-                        hintText: "Ej. 12345678",
-                        onChanged: (value_name) {
-                          numdocController.text = value_name;
-                        },
-                        typedoc: tipdocController.text,
-                      ),
-                    ],
+                        Center(
+                          child: DropdownButton(
+                            hint: Text(
+                                'Tipo de Documento'), // Not necessary for Option 1
+                            value: tipdocController.text,
+                            onChanged: (newValue) {
+                              setState(() {
+                                tipdocController.text = newValue;
+                              });
+                            },
+                            items: list_type.map((location) {
+                              return DropdownMenuItem(
+                                child: new Text(location),
+                                value: location,
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        Text("Número de documento:    "),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        RoundedInputTelefField(
+                          icon: Icons.document_scanner,
+                          hintText: "Ej. 12345678",
+                          onChanged: (value_name) {
+                            numdocController.text = value_name;
+                          },
+                          typedoc: tipdocController.text,
+                        ),
+                        Container(
+                          width: double.infinity,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                  child: GestureDetector(
+                                onTap: () async {
+                                  await canLaunch("https://juntaz.com/tyc.html")
+                                      ? launch("https://juntaz.com/tyc.html")
+                                      : false as Future<bool>;
+                                },
+                                child: RichText(
+                                  text: TextSpan(children: [
+                                    TextSpan(
+                                        text: "Lee nuestros ",
+                                        style: TextStyle(color: Colors.black)),
+                                    TextSpan(
+                                        text: "términos y condiciones",
+                                        style: TextStyle(
+                                            decoration:
+                                                TextDecoration.underline,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold))
+                                  ]),
+                                ),
+                              ))
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: double.infinity,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                  child: GestureDetector(
+                                onTap: () async {
+                                  await canLaunch("https://juntaz.com/pdp.html")
+                                      ? launch("https://juntaz.com/pdp.html")
+                                      : false as Future<bool>;
+                                },
+                                child: RichText(
+                                  text: TextSpan(children: [
+                                    TextSpan(
+                                        text: "Lee nuestra ",
+                                        style: TextStyle(color: Colors.black)),
+                                    TextSpan(
+                                        text: "Política de Privacidad",
+                                        style: TextStyle(
+                                            decoration:
+                                                TextDecoration.underline,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold))
+                                  ]),
+                                ),
+                              ))
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   actions: [
                     TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () {
+                          if (_key.currentState.validate())
+                            Navigator.pop(context);
+                        },
                         child: Text("Continuar"))
                   ],
                 ),
@@ -583,6 +723,7 @@ class _Body extends State<Body> {
             "fecha_nac": selectedbd,
             "telefono": telefonoController.text,
             "notificar": false,
+            "validado": false
           }).then((res) async {
             user = await _auth.currentUser();
             uid = user.uid;
@@ -606,7 +747,8 @@ class _Body extends State<Body> {
                     double.parse(values["total_amount"]),
                     values["fecha_nac"],
                     values["telefono"],
-                    values["notificar"] as bool));
+                    values["notificar"] as bool,
+                    values["validado"] as bool));
               });
             });
 
@@ -643,7 +785,8 @@ class _Body extends State<Body> {
                   double.parse(values["total_amount"]),
                   values["fecha_nac"],
                   values["telefono"],
-                  values["notificar"] as bool));
+                  values["notificar"] as bool,
+                  values["validado"] as bool));
             });
           });
 
@@ -653,7 +796,7 @@ class _Body extends State<Body> {
             context,
             MaterialPageRoute(
               builder: (context) => //Home(uid: result.user.uid)
-                  HomeScreen( user_: user_),
+                  HomeScreen(user_: user_),
             ),
           );
         }

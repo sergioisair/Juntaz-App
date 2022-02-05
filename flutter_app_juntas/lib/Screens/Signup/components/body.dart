@@ -75,7 +75,7 @@ class _Body extends State<Body> {
             margin: new EdgeInsets.all(15.0),
             child: new Form(
               key: _key,
-              autovalidate: _validate,
+              autovalidateMode: AutovalidateMode.always,
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -446,6 +446,7 @@ class _Body extends State<Body> {
         "fecha_nac": selectedbd,
         "telefono": telefonoController.text,
         "notificar": true,
+        "validado": false
       }).then((res) async {
         isLoading = false;
         _progressDialog.hide();
@@ -454,7 +455,7 @@ class _Body extends State<Body> {
         String uid;
         Query db = null;
         User_ user_ = new User_("NONE", "...", "...", "...", "Elegir", "...",
-            "...", 0.00, null, "...", false);
+            "...", 0.00, null, "...", false, false);
         user = await _auth.currentUser();
         uid = user.uid;
         db = await FirebaseDatabase.instance
@@ -477,7 +478,8 @@ class _Body extends State<Body> {
                 double.parse(values["total_amount"]),
                 values["fecha_nac"],
                 values["telefono"],
-                values["notificar"] as bool));
+                values["notificar"] as bool,
+                values["validado"] as bool));
           });
         });
 

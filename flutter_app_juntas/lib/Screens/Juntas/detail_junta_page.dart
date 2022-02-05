@@ -1,4 +1,5 @@
 import 'package:firebase_authentication_tutorial/global.dart';
+import 'package:firebase_authentication_tutorial/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -27,7 +28,7 @@ class DetailJunta extends StatefulWidget {
 class _DetailJuntaState extends State<DetailJunta> {
   Query db = null;
   User_ user_ = new User_("NONE", "...", "...", "...", "Elegir", "...", null,
-      0.00, null, null, false);
+      0.00, null, null, false, false);
   final FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseUser user = null;
   String uid;
@@ -70,7 +71,8 @@ class _DetailJuntaState extends State<DetailJunta> {
             double.parse(values["total_amount"]),
             values["fecha_nac"],
             values["telefono"],
-            values["notificar"] as bool));
+            values["notificar"] as bool,
+            values["validado" as bool]));
       });
       print("user name: " + user_.Id);
     });
@@ -176,18 +178,18 @@ class _DetailJuntaState extends State<DetailJunta> {
           children: <Widget>[
             Text(
               "¡Hola!",
-              style: Theme.of(context)
-                  .textTheme
-                  .display1
-                  .apply(color: Colors.grey[500]),
+              style: ThemeStyles().display1.apply(color: Colors.grey[500]),
             ),
-            Text(
-              widget.user_.Name ?? "",
-              textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .display1
-                  .apply(color: darkBlue, fontWeightDelta: 2),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: Text(
+                widget.user_.Name ?? "",
+                maxLines: 3,
+                textAlign: TextAlign.center,
+                style: ThemeStyles()
+                    .display1
+                    .apply(color: darkBlue, fontWeightDelta: 2),
+              ),
             ),
             SizedBox(
               height: 15.0,
@@ -224,8 +226,7 @@ class _DetailJuntaState extends State<DetailJunta> {
                         TextSpan(
                           text:
                               widget.junta_info.Total_amount.toStringAsFixed(0),
-                          style: Theme.of(context)
-                              .textTheme
+                          style: ThemeStyles()
                               .display1
                               .apply(color: Colors.white, fontWeightDelta: 2),
                         )
@@ -240,14 +241,18 @@ class _DetailJuntaState extends State<DetailJunta> {
                       if (widget.junta_info.Coin_type ==
                           "Tipo de Moneda: Dólares")
                         Text(
-                          "Aporte " + widget.junta_info.tipoJunta +  ": \$. " + 
+                          "Aporte " +
+                              widget.junta_info.tipoJunta +
+                              ": \$. " +
                               widget.junta_info.Aporte.toStringAsFixed(0),
                           style: TextStyle(color: Colors.grey[300]),
                         ),
                       if (widget.junta_info.Coin_type ==
                           "Tipo de Moneda: Soles")
                         Text(
-                          "Aporte " + widget.junta_info.tipoJunta +  ": S/. " +
+                          "Aporte " +
+                              widget.junta_info.tipoJunta +
+                              ": S/. " +
                               widget.junta_info.Aporte.toStringAsFixed(0),
                           style: TextStyle(color: Colors.grey[300]),
                         )
@@ -330,8 +335,7 @@ class _DetailJuntaState extends State<DetailJunta> {
             ),
             Text(
               "Detalles de Junta  " + widget.junta_info.Name_junta,
-              style: Theme.of(context)
-                  .textTheme
+              style: ThemeStyles()
                   .title
                   .apply(color: darkBlue, fontWeightDelta: 2),
             ),
@@ -415,9 +419,9 @@ class _DetailJuntaState extends State<DetailJunta> {
                           Icon(Icons.date_range, color: Colors.grey[30]),
                           SizedBox(width: 5.0),
                           Text(
-                            "Tipo de Pago: "+
-                                widget.junta_info
-                                    .tipoJunta, // cambiar a telefono
+                            "Tipo de Pago: " +
+                                widget
+                                    .junta_info.tipoJunta, // cambiar a telefono
                             style: TextStyle(color: Colors.grey[30]),
                           )
                         ],
@@ -431,9 +435,9 @@ class _DetailJuntaState extends State<DetailJunta> {
                           SizedBox(width: 5.0),
                           Text(
                             "Próximo día de aporte: " +
-                                "Día " + widget.junta_info
-                                    .aporte_day
-                                , // cambiar a telefono
+                                "Día " +
+                                widget.junta_info
+                                    .aporte_day, // cambiar a telefono
                             style: TextStyle(color: Colors.grey[30]),
                           )
                         ],

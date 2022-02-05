@@ -1,4 +1,4 @@
-class User_{
+class User_ {
   String id;
   String name;
   String apepat;
@@ -10,6 +10,7 @@ class User_{
   String telefono;
   String fecha_nac;
   bool notificar;
+  bool validado;
   /*
   String bd;
   String gender;
@@ -19,35 +20,42 @@ class User_{
   String get Id {
     return id;
   }
+
   String get Name {
     return name;
   }
-  String get Apepat{
+
+  String get Apepat {
     return apepat;
   }
-  String get Apemat{
+
+  String get Apemat {
     return apemat;
   }
-  String get Tipdoc{
+
+  String get Tipdoc {
     return tipdoc;
   }
-  String get Numdoc{
+
+  String get Numdoc {
     return numdoc;
   }
+
   String get Email {
     return email;
   }
+
   double get Total_amount {
     return total_amount;
   }
-  String get Telefono{
+
+  String get Telefono {
     return telefono;
   }
 
   String get Fecha_nac {
     return fecha_nac;
   }
-
 
   /*
   String get Bio {
@@ -65,5 +73,18 @@ class User_{
   String get N_account {
     return n_account;
   }*/
-  User_(this.id,this.name,this.apepat, this.apemat, this.tipdoc, this.numdoc, this.email, this.total_amount,  this.fecha_nac, this.telefono, this.notificar);
+  User_(
+    this.id,
+    this.name,
+    this.apepat,
+    this.apemat,
+    this.tipdoc,
+    this.numdoc,
+    this.email,
+    this.total_amount,
+    this.fecha_nac,
+    this.telefono,
+    this.notificar,
+    this.validado,
+  );
 }

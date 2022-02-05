@@ -49,13 +49,11 @@ class _Body extends State<Body> {
     super.initState();
   }
 
-  initPref() async{
+  initPref() async {
     prefs = await SharedPreferences.getInstance();
     emailController.text = prefs.getString('email');
     print(prefs.getString('email'));
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   @override
@@ -77,7 +75,6 @@ class _Body extends State<Body> {
                 height: size.height * 0.3,
               ),
               SizedBox(height: size.height * 0.01),
-              
               RoundedInputField(
                 controller: emailController,
                 hintText: "Email",
@@ -91,23 +88,23 @@ class _Body extends State<Body> {
                 },
               ),
               Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Flexible(
-                flex: 8,
-                child: Text(
-                  "Recordar este correo",
-                  style: Theme.of(context).textTheme.caption,
-                ),
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Flexible(
+                    flex: 8,
+                    child: Text(
+                      "Recordar este correo",
+                      style: Theme.of(context).textTheme.caption,
+                    ),
+                  ),
+                  Checkbox(
+                    //activeColor: AppTheme.VERDE,
+                    value: checkRememberEmail,
+                    onChanged: (value) =>
+                        setState(() => checkRememberEmail = value),
+                  ),
+                ],
               ),
-              Checkbox(
-                //activeColor: AppTheme.VERDE,
-                value: checkRememberEmail,
-                onChanged: (value) =>
-                    setState(() => checkRememberEmail = value),
-              ),
-            ],
-          ),
               SizedBox(height: size.height * 0.01),
               GestureDetector(
                 child: Container(
@@ -180,7 +177,7 @@ class _Body extends State<Body> {
   }
 
   Future<String> sendResetPasswordLink(String email) async {
-    if(email.length < 1) return null;
+    if (email.length < 1) return null;
     ProgressDialog _progressDialog2;
     try {
       _progressDialog2 = MyProgressDialog.createProgressDialog(
@@ -260,26 +257,26 @@ class _Body extends State<Body> {
         .signInWithEmailAndPassword(
             email: emailController.text, password: passwordController.text)
         .then((result) async {
-      if(result.user.isEmailVerified == false) {
+      if (result.user.isEmailVerified == false) {
         _progressDialog.hide();
         isLoading = false;
         await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-                content: Text(
-                    "Aun no has verificado tu correo electrónico"),
-                actions: [
-                  TextButton(
-                    child: Text("Entendido"),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  )
-                ]);
-          });
-          return;
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                  content: Text("Aun no has verificado tu correo electrónico"),
+                  actions: [
+                    TextButton(
+                      child: Text("Entendido"),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    )
+                  ]);
+            });
+        return;
       }
+
       isLoading = false;
       _progressDialog.hide();
       FirebaseUser user = null;
@@ -287,9 +284,12 @@ class _Body extends State<Body> {
       String uid;
       Query db = null;
       User_ user_ = new User_("NONE", "...", "...", "...", "Elegir", "...",
-          "...", 0.00, null, "...", false);
+          "...", 0.00, null, "...", false, false);
       user = await _auth.currentUser();
       uid = user.uid;
+
+      //TODOAQUI
+
       db = await FirebaseDatabase.instance
           .reference()
           .child("Users")
@@ -310,16 +310,16 @@ class _Body extends State<Body> {
               double.parse(values["total_amount"]),
               values["fecha_nac"],
               values["telefono"],
-              values["notificar"] as bool));
+              values["notificar"] as bool,
+              values["validado"] as bool));
         });
       });
 
       print(
           " EN ANTES DE LOGIN:  USERID = ${user_.id} , USER@ = ${user_.email} , USERNAME = ${user_.name}");
-      
-      if(checkRememberEmail)
-        prefs.setString("email", emailController.text);
-      
+
+      if (checkRememberEmail) prefs.setString("email", emailController.text);
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

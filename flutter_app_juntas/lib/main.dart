@@ -1,8 +1,5 @@
 import 'package:firebase_authentication_tutorial/Screens/Home/home.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:splashscreen/splashscreen.dart';
 import 'package:firebase_authentication_tutorial/Screens/Welcome/welcome_screen.dart';
 import 'package:firebase_authentication_tutorial/models/model_app.dart';
 import 'package:firebase_authentication_tutorial/constants.dart';
@@ -22,9 +19,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: app.Name,
-      routes: {
-        'home': (_) => HomeScreen()
-      },
+      routes: {'home': (_) => HomeScreen()},
       locale: Locale('es', 'MX'),
       theme: ThemeData(
         primaryColor: kPrimaryColor,

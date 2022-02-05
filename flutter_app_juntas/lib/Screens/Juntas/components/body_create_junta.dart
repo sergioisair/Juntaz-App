@@ -52,8 +52,6 @@ class _BodyCreateJunta extends State<BodyCreateJunta> {
     'Domingo'
   ];
 
-
-
   int valueDiasSemana;
   int valueDiasMensual = 14;
   List<String> dias_mensual = [
@@ -111,7 +109,7 @@ class _BodyCreateJunta extends State<BodyCreateJunta> {
     tipMonedaController.text = list_type[0];
     typeJuntaController.text = type_junta[0];
     code_junta_final =
-        cod_group[random.nextInt(cod_group.length) + 1] + code_junta.toString();
+        cod_group[random.nextInt(cod_group.length)] + code_junta.toString();
 
     item = Item("", "", false, "");
     final FirebaseDatabase database = FirebaseDatabase
@@ -134,7 +132,7 @@ class _BodyCreateJunta extends State<BodyCreateJunta> {
           margin: new EdgeInsets.all(15.0),
           child: new Form(
             key: _key,
-            autovalidate: _validate,
+            autovalidateMode: AutovalidateMode.always,
             child: SafeArea(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -388,6 +386,8 @@ class _BodyCreateJunta extends State<BodyCreateJunta> {
                           itemExtent: 30,
                           onSelectedItemChanged: (int value2) {
                             valueDiasMensual = value2;
+                            print(valueDiasMensual);
+
                             setState(() {});
                           },
                           children: List.from(dias_mensual.map((e) => Container(
@@ -406,9 +406,11 @@ class _BodyCreateJunta extends State<BodyCreateJunta> {
                         height: 200,
                         width: 150,
                         child: CupertinoPicker(
+                          looping: true,
                           itemExtent: 30,
                           onSelectedItemChanged: (int value) {
                             valueDiasSemana = value;
+                            print(valueDiasSemana);
                             setState(() {});
                           },
                           children: List.from(dias_semana.map((e) => Container(
@@ -498,7 +500,7 @@ class _BodyCreateJunta extends State<BodyCreateJunta> {
         code_junta_final,
         nameJuntaController.text[0].toUpperCase() +
             nameJuntaController.text.substring(1));
-    
+
     int fechaAporte;
     int fechaRecibo;
     String tipoJunta;
@@ -511,19 +513,29 @@ class _BodyCreateJunta extends State<BodyCreateJunta> {
           .day;
     } else if (typeJuntaController.text == type_junta[1]) {
       tipoJunta = "Quincenal";
-      if(today.day <= 14){
-        if(today.day < int.parse(dias_mensual[valueDiasMensual].split("  ")[0]) )
-          fechaAporte = int.parse(dias_mensual[valueDiasMensual].split("  ")[0]);
-        else fechaAporte = int.parse(dias_mensual[valueDiasMensual].split("  ")[2]);
+      if (today.day <= 14) {
+        if (today.day <
+            int.parse(dias_mensual[valueDiasMensual].split("  ")[0]))
+          fechaAporte =
+              int.parse(dias_mensual[valueDiasMensual].split("  ")[0]);
+        else
+          fechaAporte =
+              int.parse(dias_mensual[valueDiasMensual].split("  ")[2]);
+      } else {
+        if (today.day <
+            int.parse(dias_mensual[valueDiasMensual].split("  ")[2]))
+          fechaAporte =
+              int.parse(dias_mensual[valueDiasMensual].split("  ")[2]);
+        else
+          fechaAporte =
+              int.parse(dias_mensual[valueDiasMensual].split("  ")[0]);
       }
-      else {
-        if(today.day < int.parse(dias_mensual[valueDiasMensual].split("  ")[2]) )
-          fechaAporte = int.parse(dias_mensual[valueDiasMensual].split("  ")[2]);
-        else fechaAporte = int.parse(dias_mensual[valueDiasMensual].split("  ")[0]);
-      }
-      
-      today.day < fechaAporte ? fechaAporte = int.parse(dias_mensual[valueDiasMensual].split("  ")[2])
-          : fechaAporte = int.parse(dias_mensual[valueDiasMensual].split("  ")[0]);
+
+      today.day < fechaAporte
+          ? fechaAporte =
+              int.parse(dias_mensual[valueDiasMensual].split("  ")[2])
+          : fechaAporte =
+              int.parse(dias_mensual[valueDiasMensual].split("  ")[0]);
       fechaAporte == 30
           ? fechaRecibo = DateTime.utc(today.year, today.month, fechaAporte)
               .add(Duration(days: 1))
@@ -532,7 +544,7 @@ class _BodyCreateJunta extends State<BodyCreateJunta> {
     } else if (typeJuntaController.text == type_junta[2]) {
       tipoJunta = "Semanal";
       var diahoy = today;
-      while(diahoy.weekday != valueDiasSemana+1){
+      while (diahoy.weekday != valueDiasSemana + 1) {
         diahoy = diahoy.add(Duration(days: 1));
       }
       fechaAporte = diahoy.day;
@@ -590,7 +602,6 @@ class _BodyCreateJunta extends State<BodyCreateJunta> {
             );
           });
     });
-    
   }
 
   addIntegrants(String codeJunta, String nombreJunta) async {
@@ -750,8 +761,16 @@ class _BodyCreateJunta extends State<BodyCreateJunta> {
                 if (filter == "" || filter == null) {
                   return new Container();
                 } else {
-                  return AddIntegrants[index].name.contains(filter) ||
-                          AddIntegrants[index].form.contains(filter)
+                  return (AddIntegrants[index]
+                                  .name
+                                  .toUpperCase()
+                                  .startsWith(filter.toUpperCase()) ||
+                              AddIntegrants[index]
+                                  .form
+                                  .toUpperCase()
+                                  .startsWith(filter.toUpperCase())) &&
+                          AddIntegrants[index].key != widget.user_.id &&
+                          AddIntegrants[index].validado == true
                       ? Container(
                           height: 65,
                           child: ListTile(
@@ -837,6 +856,7 @@ class Item {
   String form;
   String name;
   bool notif;
+  bool validado;
   String phone;
 
   Item(this.form, this.name, this.notif, this.phone);
@@ -846,10 +866,17 @@ class Item {
         form = snapshot.value["email"],
         name = snapshot.value["name"],
         notif = snapshot.value["notificar"] as bool,
-        phone = snapshot.value["phone"];
+        phone = snapshot.value["phone"],
+        validado = snapshot.value["validado"] as bool;
 
   toJson() {
-    return {"email": form, "name": name, "notificar": notif, "phone": phone};
+    return {
+      "email": form,
+      "name": name,
+      "notificar": notif,
+      "phone": phone,
+      "validado": validado
+    };
   }
 }
 
