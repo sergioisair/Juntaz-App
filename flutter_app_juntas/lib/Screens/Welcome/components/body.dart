@@ -58,7 +58,7 @@ class _Body extends State<Body> {
                   "BIENVENIDO A JUNTAZ",
                   style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
                 ),
-                Text("APP DE PRUEBAS"),
+                //Text("APP DE PRUEBAS"),
                 //SizedBox(height: size.height * 0.05),
                 Image.asset(
                   //SvgPicture.asset
